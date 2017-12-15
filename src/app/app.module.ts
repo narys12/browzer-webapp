@@ -1,34 +1,53 @@
-import { BrowserModule } from '@angular/platform-browser';
+import { Apollo, ApolloModule } from 'apollo-angular';
 import { ErrorHandler, NgModule } from '@angular/core';
 import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 
+import { BrowserModule } from '@angular/platform-browser';
+import { HomePageModule } from '../pages/home/home.module';
+import { HttpClientModule } from '@angular/common/http/src/module';
+import { HttpLink } from 'apollo-angular-link-http/HttpLink';
+import { HttpLinkModule } from 'apollo-angular-link-http';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { MemoryProvider } from '../providers/memory/memory';
 import { MyApp } from './app.component';
-import { HomePage } from '../pages/home/home';
-import { ListPage } from '../pages/list/list';
-
-import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
+import { StatusBar } from '@ionic-native/status-bar';
 
 @NgModule({
   declarations: [
-    MyApp,
-    HomePage,
-    ListPage
+    MyApp
   ],
   imports: [
     BrowserModule,
     IonicModule.forRoot(MyApp),
+    ApolloModule,
+    HttpClientModule,
+    HttpLinkModule,
+    HomePageModule,
   ],
   bootstrap: [IonicApp],
   entryComponents: [
-    MyApp,
-    HomePage,
-    ListPage
+    MyApp
   ],
   providers: [
     StatusBar,
     SplashScreen,
-    {provide: ErrorHandler, useClass: IonicErrorHandler}
+    {provide: ErrorHandler, useClass: IonicErrorHandler},
+    MemoryProvider
   ]
 })
-export class AppModule {}
+export class AppModule {
+  constructor(
+    apollo: Apollo,
+    httpLink: HttpLink
+  ) {
+    apollo.create({
+      // By default, this client will send queries to the
+      // `/graphql` endpoint on the same host
+      link: httpLink.create({
+        uri: 'http://localhost:8080/api'
+      }),
+      cache: new InMemoryCache()
+    });
+  }
+}
